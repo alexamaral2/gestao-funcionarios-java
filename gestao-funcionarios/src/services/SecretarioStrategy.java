@@ -1,6 +1,6 @@
 package services;
 
-public class SecretarioService implements CargoService {
+public class SecretarioStrategy implements CargoStrategy {
 
     private static final double SALARIO_BASE = 7000.00;
     private static final double VALOR_POR_ANO_SERVICO = 1000.00;

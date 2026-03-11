@@ -1,22 +1,22 @@
 package enums;
 
-import services.CargoService;
-import services.GerenteService;
-import services.SecretarioService;
-import services.VendedorService;
+import services.CargoStrategy;
+import services.GerenteStrategy;
+import services.SecretarioStrategy;
+import services.VendedorStrategy;
 
 public enum CargoEnums {
-    SECRETARIO(new SecretarioService()),
-    VENDEDOR(new VendedorService()),
-    GERENTE(new GerenteService());
+    SECRETARIO(new SecretarioStrategy()),
+    VENDEDOR(new VendedorStrategy()),
+    GERENTE(new GerenteStrategy());
 
-    private final CargoService service;
+    private final CargoStrategy service;
 
-    CargoEnums(CargoService service) {
+    CargoEnums(CargoStrategy service) {
         this.service = service;
     }
 
-    public CargoService getService() {
+    public CargoStrategy getService() {
         return service;
     }
 
@@ -25,7 +25,7 @@ public enum CargoEnums {
         try {
             return CargoEnums.valueOf(nomeClasse);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Cargo não mapeado no Enum: " + nomeClasse);
+            throw new RuntimeException("Cargo não mapeado: " + nomeClasse);
         }
     }
 }

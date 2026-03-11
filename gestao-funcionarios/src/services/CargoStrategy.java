@@ -1,6 +1,6 @@
 package services;
 
-public interface CargoService {
+public interface CargoStrategy {
     double calcularSalario(int anosDeServico);
     double calcularBeneficio(int anosDeServico, double valorVendido);
 }

@@ -1,81 +1,130 @@
 package services;
 
 import entities.Funcionario;
+import entities.Vendedor;
+import enums.CargoEnums;
+
 import java.util.List;
 
 public class FolhaPagamentoService {
 
-    public double calcularTotalPagoNoMes(List<Funcionario> funcionarios, int mes, int ano) {
-        double total = 0;
-        for (Funcionario f : funcionarios) {
-            double salario = f.getCargo().getService().calcularSalario(f.getAnosDeServico(mes, ano));
-            double beneficio = f.getCargo().getService().calcularBeneficio(f.getAnosDeServico(mes, ano), f.getVendasNoMes(mes, ano));
-            total += (salario + beneficio);
+    private CargoStrategy obterStrategy(Funcionario funcionario) {
+        return CargoEnums.buscarPorClasse(funcionario).getService();
+    }
+
+    private double obterVendas(Funcionario funcionario, int mes, int ano) {
+        if (funcionario instanceof Vendedor vendedor) {
+            return vendedor.getVendasNoMes(mes, ano);
         }
+        return 0.0;
+    }
+
+    private double calcularSalario(Funcionario funcionario, int mes, int ano) {
+        CargoStrategy strategy = obterStrategy(funcionario);
+        int anosDeServico = funcionario.getAnosDeServico(mes, ano);
+        return strategy.calcularSalario(anosDeServico);
+    }
+
+    private double calcularBeneficio(Funcionario funcionario, int mes, int ano) {
+        CargoStrategy strategy = obterStrategy(funcionario);
+        int anosDeServico = funcionario.getAnosDeServico(mes, ano);
+        double vendas = obterVendas(funcionario, mes, ano);
+        return strategy.calcularBeneficio(anosDeServico, vendas);
+    }
+
+    private double calcularTotalRecebido(Funcionario funcionario, int mes, int ano) {
+        return calcularSalario(funcionario, mes, ano) + calcularBeneficio(funcionario, mes, ano);
+    }
+
+    public double calcularTotalPagoNoMes(List<Funcionario> funcionarios, int mes, int ano) {
+        double total = 0.0;
+
+        for (Funcionario funcionario : funcionarios) {
+            total += calcularTotalRecebido(funcionario, mes, ano);
+        }
+
         return total;
     }
 
     public double calcularTotalSalariosNoMes(List<Funcionario> funcionarios, int mes, int ano) {
-        double total = 0;
-        for (Funcionario f : funcionarios) {
-            total += f.getCargo().getService().calcularSalario(f.getAnosDeServico(mes, ano));
+        double total = 0.0;
+
+        for (Funcionario funcionario : funcionarios) {
+            total += calcularSalario(funcionario, mes, ano);
         }
+
         return total;
     }
 
     public double calcularTotalBeneficiosNoMes(List<Funcionario> funcionarios, int mes, int ano) {
-        double total = 0;
-        for (Funcionario f : funcionarios) {
-            total += f.getCargo().getService().calcularBeneficio(f.getAnosDeServico(mes, ano), f.getVendasNoMes(mes, ano));
+        double total = 0.0;
+
+        for (Funcionario funcionario : funcionarios) {
+            total += calcularBeneficio(funcionario, mes, ano);
         }
+
         return total;
     }
 
     public Funcionario getFuncionarioComMaiorRecebimento(List<Funcionario> funcionarios, int mes, int ano) {
-        if (funcionarios.isEmpty()) return null;
+        if (funcionarios == null || funcionarios.isEmpty()) {
+            return null;
+        }
 
-        Funcionario maisPago = funcionarios.get(0);
-        double maiorValor = 0;
+        Funcionario funcionarioMaisBemPago = null;
+        double maiorRecebimento = -1.0;
 
-        for (Funcionario f : funcionarios) {
-            double totalAtual = f.getCargo().getService().calcularSalario(f.getAnosDeServico(mes, ano))
-                    + f.getCargo().getService().calcularBeneficio(f.getAnosDeServico(mes, ano), f.getVendasNoMes(mes, ano));
+        for (Funcionario funcionario : funcionarios) {
+            double totalRecebido = calcularTotalRecebido(funcionario, mes, ano);
 
-            if (totalAtual > maiorValor) {
-                maiorValor = totalAtual;
-                maisPago = f;
+            if (totalRecebido > maiorRecebimento) {
+                maiorRecebimento = totalRecebido;
+                funcionarioMaisBemPago = funcionario;
             }
         }
-        return maisPago;
+
+        return funcionarioMaisBemPago;
     }
 
-    public String getNomeMaiorBeneficioNoMes(List<Funcionario> funcionarios, int mes, int ano) {
+    public Funcionario getFuncionarioComMaiorBeneficioNoMes(List<Funcionario> funcionarios, int mes, int ano) {
+        if (funcionarios == null || funcionarios.isEmpty()) {
+            return null;
+        }
+
         Funcionario funcionarioMaiorBeneficio = null;
-        double maiorBeneficio = -1;
+        double maiorBeneficio = -1.0;
 
-        for (Funcionario f : funcionarios) {
-            double beneficioAtual = f.getCargo().getService().calcularBeneficio(f.getAnosDeServico(mes, ano), f.getVendasNoMes(mes, ano));
+        for (Funcionario funcionario : funcionarios) {
+            double beneficioAtual = calcularBeneficio(funcionario, mes, ano);
 
-            if (beneficioAtual > maiorBeneficio) {
+            if (beneficioAtual > maiorBeneficio && beneficioAtual > 0) {
                 maiorBeneficio = beneficioAtual;
-                funcionarioMaiorBeneficio = f;
+                funcionarioMaiorBeneficio = funcionario;
             }
         }
-        return (funcionarioMaiorBeneficio != null) ? funcionarioMaiorBeneficio.getNome() : "Nenhum";
+
+        return funcionarioMaiorBeneficio;
     }
 
-    public String getVendedorQueMaisVendeu(List<Funcionario> funcionarios, int mes, int ano) {
-        Funcionario melhorVendedor = null;
-        double maiorVenda = -1;
+    public Vendedor getVendedorQueMaisVendeu(List<Funcionario> funcionarios, int mes, int ano) {
+        if (funcionarios == null || funcionarios.isEmpty()) {
+            return null;
+        }
 
-        for (Funcionario f : funcionarios) {
-            double vendaAtual = f.getVendasNoMes(mes, ano);
+        Vendedor melhorVendedor = null;
+        double maiorVenda = -1.0;
 
-            if (vendaAtual > maiorVenda) {
-                maiorVenda = vendaAtual;
-                melhorVendedor = f;
+        for (Funcionario funcionario : funcionarios) {
+            if (funcionario instanceof Vendedor vendedor) {
+                double vendaAtual = vendedor.getVendasNoMes(mes, ano);
+
+                if (vendaAtual > maiorVenda) {
+                    maiorVenda = vendaAtual;
+                    melhorVendedor = vendedor;
+                }
             }
         }
-        return (melhorVendedor != null) ? melhorVendedor.getNome() : "Nenhum";
+
+        return melhorVendedor;
     }
 }

@@ -1,6 +1,6 @@
 package services;
 
-public class VendedorService implements CargoService {
+public class VendedorStrategy implements CargoStrategy {
 
     private static final double SALARIO_BASE = 12000.00;
     private static final double BONUS_POR_ANO = 1800.00;

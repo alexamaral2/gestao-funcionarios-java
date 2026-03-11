@@ -1,7 +1,5 @@
 package entities;
 
-import enums.CargoEnums;
-
 public abstract class Funcionario {
     protected String nome;
     protected String dataContratacao;
@@ -30,10 +28,6 @@ public abstract class Funcionario {
         this.dataContratacao = dataContratacao;
     }
 
-    public CargoEnums getCargo() {
-        return CargoEnums.buscarPorClasse(this);
-    }
-
     public int getAnosDeServico(final int mesAlvo, final int anoAlvo) {
         String[] partes = this.dataContratacao.split("/");
         int mesContratacao = Integer.parseInt(partes[0]);
@@ -46,9 +40,5 @@ public abstract class Funcionario {
         }
 
         return Math.max(0, anos);
-    }
-
-    public double getVendasNoMes(int mes, int ano) {
-        return 0.0;
     }
 }

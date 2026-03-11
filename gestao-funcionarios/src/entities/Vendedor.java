@@ -25,7 +25,6 @@ public class Vendedor extends Funcionario {
         this.vendas = vendas;
     }
 
-    @Override
     public double getVendasNoMes(int mes, int ano) {
         String chave = String.format("%02d/%d", mes, ano);
         return vendas.getOrDefault(chave, 0).doubleValue();
